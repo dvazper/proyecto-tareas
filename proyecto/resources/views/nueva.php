@@ -32,12 +32,12 @@ function err($k, $e) { return isset($e[$k]) ? '<small class="error">'.$e[$k].'</
 <head>
   <meta charset="UTF-8" />
   <title>Nueva tarea</title>
-  <link rel="stylesheet" href="css/estilos.css">
+  <link rel="stylesheet" href="/resources/css/estilos.css">
 </head>
 <body>
 <header>
   <h1>Gestor de tareas</h1>
-  <nav><a href="index.php">Inicio</a> · <strong>Nueva</strong></nav>
+  <nav><a href="public/index.php">Inicio</a> · <strong>Nueva</strong></nav>
 </header>
 
 <main>

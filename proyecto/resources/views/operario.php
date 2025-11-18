@@ -11,7 +11,7 @@ if (isset($_GET['id'])) {
 }
 if (!$tareaEncontrada) {
     http_response_code(404);
-    echo 'No existe la tarea indicada. <a href="index.php">Volver</a>';
+    echo 'No existe la tarea indicada. <a href="public/index.php">Volver</a>';
     exit;
 }
 
@@ -36,12 +36,12 @@ function valorCampo($clave, $array) { return isset($array[$clave]) ? $array[$cla
 <head>
   <meta charset="UTF-8">
   <title>Parte de Operario</title>
-  <link rel="stylesheet" href="css/estilos.css">
+  <link rel="stylesheet" href="resources/css/estilos.css">
 </head>
 <body>
 <header>
   <h1>Gestor de tareas</h1>
-  <nav><a href="index.php">Inicio</a> · <strong>Parte operario</strong></nav>
+  <nav><a href="public/index.php">Inicio</a> · <strong>Parte operario</strong></nav>
 </header>
 
 <main>
