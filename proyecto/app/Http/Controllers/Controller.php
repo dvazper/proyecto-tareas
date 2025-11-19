@@ -2,110 +2,126 @@
 
 namespace App\Http\Controllers;
 
-abstract class Controller
+use Illuminate\Http\Request;
+use DB;
+use Carbon\Carbon;
+
+class TareaController extends Controller
 {
+    // Validación de tarea 
     function validarTarea(array $datosFormulario): array {
-    $datosValidados = [
-        'id'             => isset($datosFormulario['id']) ? htmlspecialchars(trim((string)$datosFormulario['id'])) : '',
-        'contacto'       => isset($datosFormulario['contacto']) ? htmlspecialchars(trim($datosFormulario['contacto'])) : '',
-        'nif'            => isset($datosFormulario['nif']) ? htmlspecialchars(trim($datosFormulario['nif'])) : '',
-        'telefono'       => isset($datosFormulario['telefono']) ? htmlspecialchars(trim($datosFormulario['telefono'])) : '',
-        'email'          => isset($datosFormulario['email']) ? htmlspecialchars(trim($datosFormulario['email'])) : '',
-        'direccion'      => isset($datosFormulario['direccion']) ? htmlspecialchars(trim($datosFormulario['direccion'])) : '',
-        'poblacion'      => isset($datosFormulario['poblacion']) ? htmlspecialchars(trim($datosFormulario['poblacion'])) : '',
-        'cp'             => isset($datosFormulario['cp']) ? htmlspecialchars(trim($datosFormulario['cp'])) : '',
-        'provincia'      => isset($datosFormulario['provincia']) ? htmlspecialchars(trim($datosFormulario['provincia'])) : '',
-        'descripcion'    => isset($datosFormulario['descripcion']) ? htmlspecialchars(trim($datosFormulario['descripcion'])) : '',
-        'fecha'          => isset($datosFormulario['fecha']) ? htmlspecialchars(trim($datosFormulario['fecha'])) : '',
-        'operario'       => isset($datosFormulario['operario']) ? htmlspecialchars(trim($datosFormulario['operario'])) : '',
-        'anot_prev'      => isset($datosFormulario['anot_prev']) ? htmlspecialchars(trim($datosFormulario['anot_prev'])) : '',
-        'anot_post'      => isset($datosFormulario['anot_post']) ? htmlspecialchars(trim($datosFormulario['anot_post'])) : '',
-        'estado'         => isset($datosFormulario['estado']) ? htmlspecialchars(trim($datosFormulario['estado'])) : '',
-        'fecha_creacion' => isset($datosFormulario['fecha_creacion']) ? htmlspecialchars(trim($datosFormulario['fecha_creacion'])) : '',
-    ];
+        $datosValidados = [
+            'id' => $datosFormulario['id'] ?? '',
+            'contacto' => $datosFormulario['contacto'] ?? '',
+            'nif' => $datosFormulario['nif'] ?? '',
+            'telefono' => $datosFormulario['telefono'] ?? '',
+            'email' => $datosFormulario['email'] ?? '',
+            'direccion' => $datosFormulario['direccion'] ?? '',
+            'poblacion' => $datosFormulario['poblacion'] ?? '',
+            'cp' => $datosFormulario['cp'] ?? '',
+            'provincia' => $datosFormulario['provincia'] ?? '',
+            'descripcion' => $datosFormulario['descripcion'] ?? '',
+            'fecha' => $datosFormulario['fecha'] ?? '',
+            'operario' => $datosFormulario['operario'] ?? '',
+            'anot_prev' => $datosFormulario['anot_prev'] ?? '',
+            'anot_post' => $datosFormulario['anot_post'] ?? '',
+            'estado' => $datosFormulario['estado'] ?? '',
+            'fecha_creacion' => $datosFormulario['fecha_creacion'] ?? date('d/m/Y'),
+        ];
 
-    $erroresValidacion = [];
+        $erroresValidacion = [];
 
-    if ($datosValidados['contacto'] === '')    $erroresValidacion['contacto'] = 'La persona de contacto es obligatoria.';
-    if ($datosValidados['descripcion'] === '') $erroresValidacion['descripcion'] = 'La descripción es obligatoria.';
-    if ($datosValidados['email'] === '')       $erroresValidacion['email'] = 'El email es obligatorio.';
+        if ($datosValidados['contacto'] === '')    $erroresValidacion['contacto'] = 'La persona de contacto es obligatoria.';
+        if ($datosValidados['descripcion'] === '') $erroresValidacion['descripcion'] = 'La descripción es obligatoria.';
+        if ($datosValidados['email'] === '')       $erroresValidacion['email'] = 'El email es obligatorio.';
+        if ($datosValidados['email'] !== '' && !filter_var($datosValidados['email'], FILTER_VALIDATE_EMAIL))
+            $erroresValidacion['email'] = 'Email con formato no válido.';
 
-    if ($datosValidados['email'] !== '' && !filter_var($datosValidados['email'], FILTER_VALIDATE_EMAIL))
-        $erroresValidacion['email'] = 'Email con formato no válido.';
-
-    if ($datosValidados['telefono'] === '') {
-        $erroresValidacion['telefono'] = 'El teléfono es obligatorio.';
-    } else {
-        $telefonoSoloDigitos = str_replace([' ', '-', '+', '.', '(', ')'], '', $datosValidados['telefono']);
-        if (!ctype_digit($telefonoSoloDigitos) || strlen($telefonoSoloDigitos) < 7 || strlen($telefonoSoloDigitos) > 16)
-            $erroresValidacion['telefono'] = 'Teléfono no válido.';
+        return [$datosValidados, $erroresValidacion];
     }
 
-    if ($datosValidados['nif'] !== '') {
-        $nifSinGuiones = str_replace('-', '', $datosValidados['nif']);
-        if (!ctype_alnum($nifSinGuiones) || strlen($nifSinGuiones) < 8 || strlen($nifSinGuiones) > 12)
-            $erroresValidacion['nif'] = 'Formato de NIF/CIF no válido.';
+    // Lista de provincias
+    function provincias() {
+        return [
+            '01'=>'Álava','02'=>'Albacete','03'=>'Alicante','04'=>'Almería','05'=>'Ávila',
+            '06'=>'Badajoz','07'=>'Illes Balears','08'=>'Barcelona','09'=>'Burgos','10'=>'Cáceres',
+            '11'=>'Cádiz','12'=>'Castellón','13'=>'Ciudad Real','14'=>'Córdoba','15'=>'A Coruña',
+            '16'=>'Cuenca','17'=>'Girona','18'=>'Granada','19'=>'Guadalajara','20'=>'Gipuzkoa',
+            '21'=>'Huelva','22'=>'Huesca','23'=>'Jaén','24'=>'León','25'=>'Lleida',
+            '26'=>'La Rioja','27'=>'Lugo','28'=>'Madrid','29'=>'Málaga','30'=>'Murcia',
+            '31'=>'Navarra','32'=>'Ourense','33'=>'Asturias','34'=>'Palencia','35'=>'Las Palmas',
+            '36'=>'Pontevedra','37'=>'Salamanca','38'=>'Santa Cruz de Tenerife','39'=>'Cantabria','40'=>'Segovia',
+            '41'=>'Sevilla','42'=>'Soria','43'=>'Tarragona','44'=>'Teruel','45'=>'Toledo',
+            '46'=>'València','47'=>'Valladolid','48'=>'Bizkaia','49'=>'Zamora','50'=>'Zaragoza',
+            '51'=>'Ceuta','52'=>'Melilla'
+        ];
     }
 
-    if ($datosValidados['cp'] !== '') {
-        if (!ctype_digit($datosValidados['cp']) || strlen($datosValidados['cp']) !== 5)
-            $erroresValidacion['cp'] = 'Código postal debe ser 5 números.';
+    // Mostrar todas las tareas
+    public function index() {
+        $tareas = DB::table('tareas')->get();
+        return view('tareas.index', compact('tareas'));
     }
 
-    if ($datosValidados['provincia'] === '') {
-        $erroresValidacion['provincia'] = 'Selecciona una provincia.';
-    } else {
-        if (!ctype_digit($datosValidados['provincia']) || strlen($datosValidados['provincia']) !== 2) {
-            $erroresValidacion['provincia'] = 'Código de provincia no válido.';
-        } elseif ($datosValidados['cp'] !== '' && strlen($datosValidados['cp']) === 5) {
-            $prefijoCp = substr($datosValidados['cp'], 0, 2);
-            if ($prefijoCp !== $datosValidados['provincia'])
-                $erroresValidacion['provincia'] = 'La provincia debe coincidir con los dos primeros dígitos del CP.';
-        }
+    // Formulario nueva tarea
+    public function nueva() {
+        $provincias = $this->provincias();
+        return view('tareas.nueva', compact('provincias'));
     }
 
-    if ($datosValidados['fecha'] === '') {
-        $erroresValidacion['fecha'] = 'La fecha de realización es obligatoria.';
-    } else {
-        $partesFecha = explode('/', $datosValidados['fecha']);
-        if (count($partesFecha) !== 3) {
-            $erroresValidacion['fecha'] = 'Usa formato dd/mm/aaaa.';
-        } else {
-            [$dd, $mm, $aaaa] = $partesFecha;
-            if (!ctype_digit($dd) || !ctype_digit($mm) || !ctype_digit($aaaa) || strlen($dd)!==2 || strlen($mm)!==2 || strlen($aaaa)!==4) {
-                $erroresValidacion['fecha'] = 'Usa formato dd/mm/aaaa.';
-            } else {
-                $dia = (int)$dd; $mes = (int)$mm; $anio = (int)$aaaa;
-                if (!checkdate($mes, $dia, $anio)) {
-                    $erroresValidacion['fecha'] = 'Fecha no válida.';
-                } else {
-                    $hoyTs = strtotime('today');
-                    $fechaTs = strtotime("$anio-$mm-$dd");
-                    if ($fechaTs <= $hoyTs) $erroresValidacion['fecha'] = 'Debe ser posterior a hoy.';
-                }
-            }
-        }
+    // Guardar nueva tarea
+    public function guardarNueva(Request $request) {
+        [$datos, $errores] = $this->validarTarea($request->all());
+        if ($errores) return back()->withErrors($errores)->withInput();
+
+        // Convertir fechas a formato MySQL
+        $datos['fecha'] = Carbon::createFromFormat('d/m/Y', $datos['fecha'])->format('Y-m-d');
+        $datos['fecha_creacion'] = Carbon::createFromFormat('d/m/Y', $datos['fecha_creacion'])->format('Y-m-d');
+
+        DB::table('tareas')->insert($datos);
+        return redirect('/tareas');
     }
 
-    $estadosPermitidos = ['B','P','R','C'];
-    if ($datosValidados['estado'] === '' || !in_array($datosValidados['estado'], $estadosPermitidos, true))
-        $erroresValidacion['estado'] = 'Estado no válido.';
-
-    if ($datosValidados['fecha_creacion'] === '') {
-        $datosValidados['fecha_creacion'] = date('d/m/Y');
-    } else {
-        $partesCreacion = explode('/', $datosValidados['fecha_creacion']);
-        if (count($partesCreacion) !== 3) {
-            $datosValidados['fecha_creacion'] = date('d/m/Y');
-        } else {
-            [$d,$m,$y] = $partesCreacion;
-            if (!ctype_digit($d) || !ctype_digit($m) || !ctype_digit($y) || !checkdate((int)$m,(int)$d,(int)$y))
-                $datosValidados['fecha_creacion'] = date('d/m/Y');
-        }
+    // Formulario editar tarea
+    public function editar($id) {
+        $tarea = DB::table('tareas')->find($id);
+        $provincias = $this->provincias();
+        return view('tareas.editar', compact('tarea', 'provincias'));
     }
 
-    return [$datosValidados, $erroresValidacion];
+    // Guardar tarea editada
+    public function guardarEditar(Request $request, $id) {
+        [$datos, $errores] = $this->validarTarea($request->all());
+        if ($errores) return back()->withErrors($errores)->withInput();
+
+        // Convertir fechas
+        $datos['fecha'] = Carbon::createFromFormat('d/m/Y', $datos['fecha'])->format('Y-m-d');
+        $datos['fecha_creacion'] = Carbon::createFromFormat('d/m/Y', $datos['fecha_creacion'])->format('Y-m-d');
+
+        DB::table('tareas')->where('id', $id)->update($datos);
+        return redirect('/tareas');
+    }
+
+    // Borrar tarea
+    public function borrar($id) {
+        DB::table('tareas')->where('id', $id)->delete();
+        return redirect('/tareas');
+    }
+
+    // Formulario parte operario
+    public function operario($id) {
+        $tarea = DB::table('tareas')->find($id);
+        return view('tareas.operario', compact('tarea'));
+    }
+
+    // Guardar parte operario
+    public function guardarOperario(Request $request, $id) {
+        $datos = $request->only('estado','fecha','anot_post');
+
+        // Convertir fecha
+        $datos['fecha'] = Carbon::createFromFormat('d/m/Y', $datos['fecha'])->format('Y-m-d');
+
+        DB::table('tareas')->where('id', $id)->update($datos);
+        return redirect('/tareas');
+    }
 }
-
-}
-
