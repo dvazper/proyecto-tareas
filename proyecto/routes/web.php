@@ -1,12 +1,15 @@
 <?php
 
+use App\Http\Controllers\Controller;
+use App\Http\Controllers\TaskController;
+use App\Http\Controllers\OperarioController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    echo "<h1>Hola Mundo</h1>";
-    //return view('welcome');
+    return redirect()->route('tasks.index');
 });
 
-use App\Http\Controllers\TareaController;
+Route::resource('tasks', TaskController::class)->only(['index','create','store']);
 
-Route::get('/', [TareaController::class, 'index']);
+Route::get('tasks/{task}/operario', [OperarioController::class, 'edit'])->name('operario.edit');
+Route::put('tasks/{task}/operario', [OperarioController::class, 'update'])->name('operario.update');
