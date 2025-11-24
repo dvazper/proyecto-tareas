@@ -1,0 +1,304 @@
+/* ------------------------------
+   ESTILOS GENERALES
+------------------------------ */
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: #f3f4f6;
+  color: #111827;
+}
+
+/* Contenedor principal */
+.contenedor {
+  max-width: 1100px;
+  margin: 2rem auto 4rem auto;
+  padding: 0 1rem;
+}
+
+/* ------------------------------
+   CABECERA
+------------------------------ */
+
+.cabecera {
+  background: #111827;
+  color: #f9fafb;
+  padding: 1rem 0.5rem 1rem 0.5rem;
+  border-bottom: 4px solid #2563eb;
+}
+
+.cabecera-contenido {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+}
+
+.empresa {
+  margin: 0;
+  font-size: 1.6rem;
+  letter-spacing: 0.03em;
+}
+
+.subtitulo {
+  margin: 0.25rem 0 0 0;
+  font-size: 0.9rem;
+  color: #9ca3af;
+}
+
+/* Menú */
+.menu a {
+  color: #e5e7eb;
+  text-decoration: none;
+  margin-left: 1rem;
+  font-size: 0.95rem;
+  padding: 0.4rem 0.7rem;
+  border-radius: 999px;
+  border: 1px solid transparent;
+}
+
+.menu a:hover {
+  border-color: #60a5fa;
+  background: #1f2937;
+}
+
+/* ------------------------------
+   TITULOS DE PÁGINA
+------------------------------ */
+
+h2 {
+  margin-top: 0;
+  font-size: 1.4rem;
+  color: #111827;
+  border-bottom: 2px solid #e5e7eb;
+  padding-bottom: 0.3rem;
+}
+
+/* ------------------------------
+   TABLAS
+------------------------------ */
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+  background: #ffffff;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
+}
+
+thead {
+  background: #111827;
+  color: #f9fafb;
+}
+
+th, td {
+  padding: 0.65rem 0.75rem;
+  text-align: left;
+  font-size: 0.9rem;
+}
+
+tbody tr:nth-child(even) {
+  background: #f9fafb;
+}
+
+tbody tr:hover {
+  background: #e5f0ff;
+}
+
+th {
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+td a {
+  color: #2563eb;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+td a:hover {
+  text-decoration: underline;
+}
+
+/* ------------------------------
+   FORMULARIOS
+------------------------------ */
+
+form {
+  margin-top: 1rem;
+  background: #ffffff;
+  padding: 1.25rem 1.5rem;
+  border-radius: 0.75rem;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
+}
+
+label {
+  display: block;
+  margin-bottom: 0.8rem;
+  font-size: 0.9rem;
+  color: #111827;
+}
+
+label input,
+label select,
+label textarea {
+  display: block;
+  width: 100%;
+  margin-top: 0.25rem;
+  padding: 0.45rem 0.55rem;
+  border-radius: 0.5rem;
+  border: 1px solid #d1d5db;
+  font-size: 0.9rem;
+  font-family: inherit;
+}
+
+label textarea {
+  min-height: 80px;
+  resize: vertical;
+}
+
+label input:focus,
+label select:focus,
+label textarea:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 1px #2563eb22;
+}
+
+/* Fieldset para estado operario */
+
+fieldset {
+  border: 1px solid #d1d5db;
+  border-radius: 0.75rem;
+  padding: 0.8rem 1rem 0.9rem 1rem;
+  margin-bottom: 1rem;
+  background: #f9fafb;
+}
+
+legend {
+  font-size: 0.9rem;
+  font-weight: 600;
+  padding: 0 0.4rem;
+}
+
+/* Botones */
+
+button,
+.button-link {
+  display: inline-block;
+  margin-top: 0.7rem;
+  padding: 0.5rem 1.1rem;
+  border-radius: 999px;
+  border: none;
+  background: #2563eb;
+  color: #f9fafb;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+button:hover,
+.button-link:hover {
+  background: #1d4ed8;
+}
+
+/* ------------------------------
+   TARJETAS / SECCIONES
+------------------------------ */
+
+.card {
+  background: #ffffff;
+  border-radius: 0.75rem;
+  padding: 1rem 1.2rem;
+  margin-bottom: 1rem;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
+}
+
+.card ul {
+  list-style: none;
+  padding-left: 0;
+  margin: 0.2rem 0 0 0;
+}
+
+.card li {
+  font-size: 0.9rem;
+  margin-bottom: 0.3rem;
+}
+
+/* ------------------------------
+   MENSAJES
+------------------------------ */
+
+.msg {
+  margin: 0.8rem auto 0;
+  max-width: 1100px;
+  padding: 0.6rem 0.9rem;
+  border-radius: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.msg.ok {
+  background: #ecfdf3;
+  color: #166534;
+  border: 1px solid #4ade80;
+}
+
+.msg.error {
+  background: #fef2f2;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+}
+
+small.error {
+  display: block;
+  margin-top: 0.15rem;
+  font-size: 0.78rem;
+  color: #b91c1c;
+}
+
+/* ------------------------------
+   PIE DE PÁGINA
+------------------------------ */
+
+.pie {
+  text-align: center;
+  padding: 1.1rem 0.5rem 1.4rem 0.5rem;
+  font-size: 0.8rem;
+  color: #6b7280;
+  border-top: 1px solid #e5e7eb;
+  margin-top: 2rem;
+}
+
+/* ------------------------------
+   RESPONSIVE
+------------------------------ */
+
+@media (max-width: 700px) {
+  .cabecera-contenido {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .menu a {
+    margin-left: 0;
+    margin-right: 0.5rem;
+  }
+
+  table {
+    font-size: 0.8rem;
+  }
+
+  th, td {
+    padding: 0.45rem 0.5rem;
+  }
+}

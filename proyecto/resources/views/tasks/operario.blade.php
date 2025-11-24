@@ -2,47 +2,56 @@
 @section('title','Parte de operario')
 
 @section('content')
-<h2>Parte de operario — Tarea #{{ $task->id }}</h2>
+<h2>Parte de operario — Tarea #{{ $tarea['id'] }}</h2>
 
-@if ($errors->any())
+@if ($erroresValidacion)
   <p class="msg error">Revisa los campos marcados.</p>
 @endif
 
 <section class="card">
   <h3>Datos (solo lectura)</h3>
   <ul>
-    <li><strong>Contacto:</strong> {{ $task->contacto }}</li>
-    <li><strong>Descripción:</strong> {{ $task->descripcion }}</li>
-    <li><strong>Teléfono:</strong> {{ $task->telefono }}</li>
-    <li><strong>Email:</strong> {{ $task->email }}</li>
-    <li><strong>Provincia/CP:</strong> {{ $task->provincia }} / {{ $task->cp }}</li>
-    <li><strong>Creación:</strong> {{ \Illuminate\Support\Carbon::parse($task->fecha_creacion)->format('d/m/Y') }}</li>
+    <li><strong>Contacto:</strong> {{ $tarea['contacto'] }}</li>
+    <li><strong>Descripción:</strong> {{ $tarea['descripcion'] }}</li>
+    <li><strong>Teléfono:</strong> {{ $tarea['telefono'] }}</li>
+    <li><strong>Email:</strong> {{ $tarea['email'] }}</li>
+    <li><strong>Provincia / CP:</strong> {{ $tarea['provincia'] }} / {{ $tarea['cp'] }}</li>
+    <li><strong>Fecha creación:</strong>
+      @if(!empty($tarea['fecha_creacion']))
+        {{ \Illuminate\Support\Carbon::parse($tarea['fecha_creacion'])->format('d/m/Y') }}
+      @endif
+    </li>
   </ul>
 </section>
 
-<form method="post" action="{{ route('operario.update', $task) }}" novalidate>
+<form method="post" action="{{ route('operario.update', ['id' => $tarea['id']]) }}" novalidate>
   @csrf
-  @method('PUT')
+
+  <input type="hidden" name="fecha_creacion" value="{{ $datosValidados['fecha_creacion'] ?? '' }}">
 
   <label>Fecha de realización (dd/mm/aaaa)
-    <input type="text" name="fecha" value="{{ old('fecha', \Illuminate\Support\Carbon::parse($task->fecha)->format('d/m/Y')) }}">
-    @error('fecha') <small class="error">{{ $message }}</small> @enderror
+    <input type="text" name="fecha" value="{{ $datosValidados['fecha'] ?? '' }}">
+    @if(isset($erroresValidacion['fecha']))
+      <small class="error">{{ $erroresValidacion['fecha'] }}</small>
+    @endif
   </label>
 
   <fieldset>
     <legend>Estado</legend>
-    @php $estado = old('estado', $task->estado ?? 'R'); @endphp
-    @foreach(['R'=>'Realizada','C'=>'Cancelada','P'=>'Pendiente','B'=>'Esperando aprobación'] as $val=>$txt)
-      <label style="margin-right:15px;">
-        <input type="radio" name="estado" value="{{ $val }}" {{ $estado===$val ? 'checked':'' }}>
+    @php $estado = $datosValidados['estado'] ?? $tarea['estado'] ?? 'R'; @endphp
+    @foreach(['R'=>'Realizada','C'=>'Cancelada','P'=>'Pendiente','B'=>'Esperando aprobación'] as $val => $txt)
+      <label style="margin-right: 12px;">
+        <input type="radio" name="estado" value="{{ $val }}" @if($estado === $val) checked @endif>
         {{ $val }} ({{ $txt }})
       </label>
     @endforeach
-    @error('estado') <small class="error">{{ $message }}</small> @enderror
+    @if(isset($erroresValidacion['estado']))
+      <small class="error">{{ $erroresValidacion['estado'] }}</small>
+    @endif
   </fieldset>
 
   <label>Anotaciones posteriores
-    <textarea name="anot_post">{{ old('anot_post', $task->anot_post) }}</textarea>
+    <textarea name="anot_post">{{ $datosValidados['anot_post'] ?? $tarea['anot_post'] }}</textarea>
   </label>
 
   <button type="submit">Guardar parte</button>
