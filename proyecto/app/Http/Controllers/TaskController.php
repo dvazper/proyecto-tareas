@@ -14,13 +14,16 @@ class TaskController extends Controller
     }
 
     public function index()
-    {
-        $tareasRegistradas = $this->taskModel->obtenerTodas();
-        return view('tasks.index', [
-            'tareasRegistradas' => $tareasRegistradas,
-            'mensajeOk' => null,
-        ]);
-    }
+{
+    $tareasRegistradas = $this->taskModel->obtenerTodas();
+    $mensajeOk = session('mensajeOk'); // leer mensaje flash
+
+    return view('tasks.index', [
+        'tareasRegistradas' => $tareasRegistradas,
+        'mensajeOk'         => $mensajeOk,
+    ]);
+}
+
 
     public function create()
     {
@@ -35,22 +38,22 @@ class TaskController extends Controller
     {
         $datosFormulario = $_POST;
 
-        // ⬇️ VALIDACIÓN INCLUIDA EN EL MISMO ARCHIVO
+        // VALIDACIÓN INCLUIDA EN EL MISMO ARCHIVO
         [$datosValidados, $erroresValidacion] = $this->validarTarea($datosFormulario);
 
-        if (empty($erroresValidacion)) {
+      if (empty($erroresValidacion)) {
 
-            $datosValidados['fecha'] = $this->aFechaSQL($datosValidados['fecha']);
-            $datosValidados['fecha_creacion'] = $this->aFechaSQL($datosValidados['fecha_creacion']);
-            $datosValidados['fichero'] = '';
+    $datosValidados['fecha'] = $this->aFechaSQL($datosValidados['fecha']);
+    $datosValidados['fecha_creacion'] = $this->aFechaSQL($datosValidados['fecha_creacion']);
+    $datosValidados['fichero'] = '';
 
-            $this->taskModel->insertar($datosValidados);
+    $this->taskModel->insertar($datosValidados);
 
-            return view('tasks.index', [
-                'tareasRegistradas' => $this->taskModel->obtenerTodas(),
-                'mensajeOk'         => 'Tarea creada correctamente.',
-            ]);
-        }
+    return redirect()
+        ->route('tasks.index')
+        ->with('mensajeOk', 'Tarea creada correctamente.');
+}
+
 
         return view('tasks.create', [
             'listaProvincias'   => $this->provinciasINE(),
@@ -235,4 +238,15 @@ class TaskController extends Controller
         $p = explode('/',$f);
         return sprintf('%04d-%02d-%02d',(int)$p[2],(int)$p[1],(int)$p[0]);
     }
+
+    /* ELIMINAR PARTES */
+    public function destroy(int $id)
+{
+    $this->taskModel->eliminar($id);
+
+    return redirect()
+        ->route('tasks.index')
+        ->with('mensajeOk', 'Tarea eliminada correctamente.');
+}
+
 }

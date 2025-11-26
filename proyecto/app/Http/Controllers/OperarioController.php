@@ -44,7 +44,6 @@ class OperarioController extends Controller
             abort(404, 'Tarea no encontrada');
         }
 
-        // Copiamos todo lo que había
         $paqueteOperario = $tareaOriginal;
 
         // Campos modificables por operario
@@ -54,89 +53,105 @@ class OperarioController extends Controller
         $paqueteOperario['fecha_creacion'] =
             $_POST['fecha_creacion'] ?? $tareaOriginal['fecha_creacion'];
 
-        // ⬇ VALIDACIÓN DENTRO DEL CONTROLADOR
-        [$datosValidados, $erroresValidacion] = $this->validarParteOperario($paqueteOperario);
+       // VALIDACIÓN
+[$datosValidados, $erroresValidacion] = $this->validarParteOperario($paqueteOperario);
 
-        if (empty($erroresValidacion)) {
+if (empty($erroresValidacion)) {
 
-            $datosValidados['fecha'] = $this->aFechaSQL($datosValidados['fecha']);
+    $datosValidados['fecha'] = $this->convertirFechaFormularioASQL($datosValidados['fecha']);
 
-            $this->taskModel->actualizarDesdeOperario($id, $datosValidados);
+    $this->taskModel->actualizarDesdeOperario($id, $datosValidados);
 
-            return view('tasks.index', [
-                'tareasRegistradas' => $this->taskModel->obtenerTodas(),
-                'mensajeOk'         => 'Parte de operario guardado.',
-            ]);
+    return redirect()
+        ->route('tasks.index')
+        ->with('mensajeOk', 'Parte de operario guardado.');
+}
+
+
+return view('tasks.operario', [
+    'tarea'            => $tareaOriginal,
+    'datosValidados'   => $datosValidados,
+    'erroresValidacion'=> $erroresValidacion,
+]);
+}
+
+
+ private function validarParteOperario(array $datosOperario): array
+{
+    $erroresValidacion = [];
+
+    $erroresValidacion += $this->validarFechaOperario($datosOperario);
+    $erroresValidacion += $this->validarEstadoOperario($datosOperario);
+
+    $textoAnotaciones = $datosOperario['anot_post'] ?? '';
+    $datosOperario['anot_post'] = htmlspecialchars(trim($textoAnotaciones));
+
+    return [$datosOperario, $erroresValidacion];
+}
+
+private function validarFechaOperario(array $datosOperario): array
+{
+    $erroresFecha = [];
+
+    if ($datosOperario['fecha'] !== '') {
+        $partesFecha = explode('/', $datosOperario['fecha']);
+        if (count($partesFecha) !== 3) {
+            return ['fecha' => 'Formato dd/mm/aaaa.'];
         }
 
-        return view('tasks.operario', [
-            'tarea'            => $tareaOriginal,
-            'datosValidados'   => $datosValidados,
-            'erroresValidacion'=> $erroresValidacion,
-        ]);
-    }
+        [$diaStr, $mesStr, $anioStr] = $partesFecha;
 
-
-    /* ============================================================
-       VALIDACIONES PARA EL PARTE DE OPERARIO
-       ============================================================ */
-
-    private function validarParteOperario(array $d): array
-    {
-        $errores = [];
-
-        // Solo validar lo que el operario puede tocar
-        $errores += $this->validarFecha($d);
-        $errores += $this->validarEstado($d);
-
-        // anot_post no requiere formato
-        $d['anot_post'] = htmlspecialchars(trim($d['anot_post']));
-
-        return [$d, $errores];
-    }
-
-
-    /* ============================================================
-       FUNCIONES PRIVADAS DE VALIDACIÓN (RECORTADAS)
-       ============================================================ */
-
-    private function validarFecha($d)
-    {
-        $e=[];
-        if ($d['fecha']!=='') {
-            $p = explode('/',$d['fecha']);
-            if (count($p)!==3) return ['fecha'=>'Formato dd/mm/aaaa.'];
-
-            [$dd,$mm,$aa] = $p;
-
-            if(!ctype_digit($dd) || !ctype_digit($mm) || !ctype_digit($aa))
-                return ['fecha'=>'Formato dd/mm/aaaa.'];
-
-            if(!checkdate((int)$mm,(int)$dd,(int)$aa))
-                return ['fecha'=>'Fecha no válida.'];
-
-            if (strtotime("$aa-$mm-$dd") <= strtotime('today'))
-                return ['fecha'=>'Debe ser posterior a hoy.'];
+        if (!ctype_digit($diaStr) || !ctype_digit($mesStr) || !ctype_digit($anioStr)) {
+            return ['fecha' => 'Formato dd/mm/aaaa.'];
         }
-        return $e;
-    }
 
-    private function validarEstado($d)
-    {
-        $e=[];
-        if ($d['estado']==='' || !in_array($d['estado'], ['B','P','R','C'])) {
-            $e['estado']='Estado no válido.';
+        $dia  = (int)$diaStr;
+        $mes  = (int)$mesStr;
+        $anio = (int)$anioStr;
+
+        if (!checkdate($mes, $dia, $anio)) {
+            return ['fecha' => 'Fecha no válida.'];
         }
-        return $e;
+
+        $timestampFecha = strtotime("$anio-$mes-$dia");
+        $timestampHoy   = strtotime('today');
+
+        if ($timestampFecha <= $timestampHoy) {
+            return ['fecha' => 'Debe ser posterior a hoy.'];
+        }
     }
 
-    /* ============================================================
-       AUXILIARES
-       ============================================================ */
+    return $erroresFecha;
+}
 
-    private function aFechaSQL(string $f): string
-    {
-        $p = explode('/',$f);
-        return sprintf('%04d-%02d-%02d',(int)$p[2],(int)$p[1],(int)$p[0]);
+private function validarEstadoOperario(array $datosOperario): array
+{
+    $erroresEstado = [];
+    $estadosPermitidos = ['B','P','R','C'];
+
+    if ($datosOperario['estado'] === '' ||
+        !in_array($datosOperario['estado'], $estadosPermitidos, true)) {
+
+        $erroresEstado['estado'] = 'Estado no válido.';
     }
+
+    return $erroresEstado;
+}
+
+private function convertirFechaFormularioASQL(string $fechaFormulario): string
+{
+    $partesFecha = explode('/', $fechaFormulario);
+
+    if (count($partesFecha) !== 3) {
+        return date('Y-m-d');
+    }
+
+    [$diaStr, $mesStr, $anioStr] = $partesFecha;
+    $dia  = (int)$diaStr;
+    $mes  = (int)$mesStr;
+    $anio = (int)$anioStr;
+
+    return sprintf('%04d-%02d-%02d', $anio, $mes, $dia);
+}
+
 }

@@ -79,4 +79,12 @@ class TaskModel
             'id'        => $id,
         ]);
     }
+    
+    public function eliminar(int $id): void
+{
+    $sql = "DELETE FROM tareas WHERE id = :id";
+    $stmt = $this->db->prepare($sql);
+    $stmt->execute(['id' => $id]);
+}
+
 }

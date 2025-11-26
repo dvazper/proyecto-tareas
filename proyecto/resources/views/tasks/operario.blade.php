@@ -36,19 +36,24 @@
     @endif
   </label>
 
-  <fieldset>
-    <legend>Estado</legend>
-    @php $estado = $datosValidados['estado'] ?? $tarea['estado'] ?? 'R'; @endphp
+ <fieldset>
+  <legend>Estado</legend>
+  @php $estado = $datosValidados['estado'] ?? $tarea['estado'] ?? 'R'; @endphp
+
+  <div class="grupo-estado-radios">
     @foreach(['R'=>'Realizada','C'=>'Cancelada','P'=>'Pendiente','B'=>'Esperando aprobación'] as $val => $txt)
-      <label style="margin-right: 12px;">
+      <label>
         <input type="radio" name="estado" value="{{ $val }}" @if($estado === $val) checked @endif>
-        {{ $val }} ({{ $txt }})
+        <span>{{ $val }} ({{ $txt }})</span>
       </label>
     @endforeach
-    @if(isset($erroresValidacion['estado']))
-      <small class="error">{{ $erroresValidacion['estado'] }}</small>
-    @endif
-  </fieldset>
+  </div>
+
+  @if(isset($erroresValidacion['estado']))
+    <small class="error">{{ $erroresValidacion['estado'] }}</small>
+  @endif
+</fieldset>
+
 
   <label>Anotaciones posteriores
     <textarea name="anot_post">{{ $datosValidados['anot_post'] ?? $tarea['anot_post'] }}</textarea>

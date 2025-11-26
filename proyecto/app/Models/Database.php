@@ -12,7 +12,7 @@ class Database
 
     private function __construct()
     {
-        // Lee la configuración desde config/bd.php (tu propia config)
+        // Lee la configuración desde config/bd.php
         $config = require base_path('config/bd.php');
 
         $dsn  = $config['dsn']  ?? '';
@@ -25,7 +25,7 @@ class Database
                 PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
             ]);
         } catch (PDOException $e) {
-            // Para desarrollo: muestra el error
+            // muestra el error
             die('Error de conexión a la BD: ' . $e->getMessage());
         }
     }

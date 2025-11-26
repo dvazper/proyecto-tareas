@@ -301,4 +301,31 @@ small.error {
   th, td {
     padding: 0.45rem 0.5rem;
   }
+
+  /* Estado */
+
+  .grupo-estado-radios {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 2rem;
+  margin-top: 0.3rem;
+}
+
+.grupo-estado-radios label {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.9rem;
+}
+
+/* Botón borrar */
+.boton-peligro {
+  background: #dc2626;
+}
+
+.boton-peligro:hover {
+  background: #b91c1c;
+}
+
+
 }
