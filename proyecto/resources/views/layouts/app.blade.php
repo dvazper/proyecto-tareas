@@ -1,38 +1,47 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>@yield('title','Gestor de tareas')</title>
+    <meta charset="UTF-8">
+    <title>@yield('title')</title>
 
-  {{-- Enlazamos el CSS (public/css/app.css) --}}
-  <link rel="stylesheet" href="{{ asset('css/app.css') }}">
+    {{-- Enlace al CSS --}}
+    <link rel="stylesheet" href="/proyecto-tareas/proyecto/public/css/app.css">
+
+    @php
+        use App\Models\SessionManager;
+        $session = SessionManager::getInstancia();
+        $usuarioActual = $session->obtenerUsuario();
+    @endphp
 </head>
+
 <body>
-<header class="cabecera">
-  <div class="cabecera-contenido">
-    <div>
-      <h1 class="empresa">Bunglebuild S.L.</h1>
-      <p class="subtitulo">Gestor de incidencias y tareas</p>
+
+<header class="main-header">
+    <div class="header-left">
+        <h1>Bunglebuild S.L.</h1>
     </div>
 
-    <nav class="menu">
-      <a href="{{ route('tasks.index') }}">Listado de tareas</a>
-      <a href="{{ route('tasks.create') }}">Nueva tarea</a>
-    </nav>
-  </div>
+    <div class="header-right">
+        @if($session->estaLogueado())
+            <span class="usuario-info">
+                {{ $usuarioActual['nombre'] }} ({{ $usuarioActual['rol'] }})
+            </span>
 
-  @if(isset($mensajeOk) && $mensajeOk)
-    <p class="msg ok">{{ $mensajeOk }}</p>
-  @endif
+            <form method="post"
+                  action="/proyecto-tareas/proyecto/public/logout"
+                  style="display:inline;">
+                @csrf
+                <button type="submit" class="button-link">
+                    Cerrar sesión
+                </button>
+            </form>
+        @endif
+    </div>
 </header>
 
-<main class="contenedor">
-  @yield('content')
+<main class="contenido-principal">
+    @yield('content')
 </main>
-
-<footer class="pie">
-  <small>© {{ date('Y') }} Bunglebuild S.L. · Gestor interno</small>
-</footer>
 
 </body>
 </html>

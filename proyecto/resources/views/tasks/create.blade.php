@@ -1,116 +1,178 @@
 @extends('layouts.app')
-@section('title','Nueva tarea')
+
+@section('title', 'Nueva tarea')
 
 @section('content')
+
+<a href="/proyecto-tareas/proyecto/public/tasks" class="button-link" style="margin-bottom: 1rem; display:inline-block;">
+    ← Volver al listado
+</a>
+
 <h2>Nueva tarea</h2>
 
-@if ($erroresValidacion)
-  <p class="msg error">Revisa los campos marcados en rojo.</p>
+@if(!empty($erroresValidacion))
+    <div class="msg error">
+        Revisa los campos marcados.
+    </div>
 @endif
 
-<form method="post" action="{{ route('tasks.store') }}" novalidate>
-  @csrf
+<form method="post" action="/proyecto-tareas/proyecto/public/tasks">
+    @csrf
 
-  <label>Persona de contacto
-    <input type="text" name="contacto" value="{{ $datosValidados['contacto'] ?? '' }}">
-    @if(isset($erroresValidacion['contacto']))
-      <small class="error">{{ $erroresValidacion['contacto'] }}</small>
+    {{-- CONTACTO --}}
+    @php
+        $contactoValor = $datosValidados['contacto'] ?? '';
+        $contactoError = $erroresValidacion['contacto'] ?? null;
+    @endphp
+    <label>Persona de contacto</label>
+    <input type="text"
+           name="contacto"
+           value="{{ $contactoValor }}"
+           class="{{ $contactoError ? 'error-input' : '' }}">
+    @if($contactoError)
+        <p class="msg error">{{ $contactoError }}</p>
     @endif
-  </label>
 
-  <label>NIF/CIF
-    <input type="text" name="nif" value="{{ $datosValidados['nif'] ?? '' }}">
-    @if(isset($erroresValidacion['nif']))
-      <small class="error">{{ $erroresValidacion['nif'] }}</small>
+
+    {{-- NIF/CIF --}}
+    @php
+        $nifValor = $datosValidados['nif'] ?? '';
+        $nifError = $erroresValidacion['nif'] ?? null;
+    @endphp
+    <label>NIF/CIF</label>
+    <input type="text"
+           name="nif"
+           value="{{ $nifValor }}"
+           class="{{ $nifError ? 'error-input' : '' }}">
+    @if($nifError)
+        <p class="msg error">{{ $nifError }}</p>
     @endif
-  </label>
 
-  <label>Teléfono
-    <input type="text" name="telefono" value="{{ $datosValidados['telefono'] ?? '' }}">
-    @if(isset($erroresValidacion['telefono']))
-      <small class="error">{{ $erroresValidacion['telefono'] }}</small>
+
+    {{-- TELÉFONO --}}
+    @php
+        $telValor = $datosValidados['telefono'] ?? '';
+        $telError = $erroresValidacion['telefono'] ?? null;
+    @endphp
+    <label>Teléfono</label>
+    <input type="text"
+           name="telefono"
+           value="{{ $telValor }}"
+           class="{{ $telError ? 'error-input' : '' }}">
+    @if($telError)
+        <p class="msg error">{{ $telError }}</p>
     @endif
-  </label>
 
-  <label>Correo electrónico
-    <input type="text" name="email" value="{{ $datosValidados['email'] ?? '' }}">
-    @if(isset($erroresValidacion['email']))
-      <small class="error">{{ $erroresValidacion['email'] }}</small>
+
+    {{-- EMAIL --}}
+    @php
+        $emailValor = $datosValidados['email'] ?? '';
+        $emailError = $erroresValidacion['email'] ?? null;
+    @endphp
+    <label>Email</label>
+    <input type="text"
+           name="email"
+           value="{{ $emailValor }}"
+           class="{{ $emailError ? 'error-input' : '' }}">
+    @if($emailError)
+        <p class="msg error">{{ $emailError }}</p>
     @endif
-  </label>
 
-  <label>Dirección
-    <input type="text" name="direccion" value="{{ $datosValidados['direccion'] ?? '' }}">
-  </label>
 
-  <label>Población
-    <input type="text" name="poblacion" value="{{ $datosValidados['poblacion'] ?? '' }}">
-  </label>
+    {{-- DIRECCIÓN --}}
+    <label>Dirección</label>
+    <input type="text"
+           name="direccion"
+           value="{{ $datosValidados['direccion'] ?? '' }}">
 
-  <label>Código postal
-    <input type="text" name="cp" value="{{ $datosValidados['cp'] ?? '' }}">
-    @if(isset($erroresValidacion['cp']))
-      <small class="error">{{ $erroresValidacion['cp'] }}</small>
+
+    {{-- POBLACIÓN --}}
+    <label>Población</label>
+    <input type="text"
+           name="poblacion"
+           value="{{ $datosValidados['poblacion'] ?? '' }}">
+
+
+    {{-- CÓDIGO POSTAL --}}
+    @php
+        $cpValor = $datosValidados['cp'] ?? '';
+        $cpError = $erroresValidacion['cp'] ?? null;
+    @endphp
+    <label>Código postal</label>
+    <input type="text"
+           name="cp"
+           value="{{ $cpValor }}"
+           class="{{ $cpError ? 'error-input' : '' }}">
+    @if($cpError)
+        <p class="msg error">{{ $cpError }}</p>
     @endif
-  </label>
 
-  <label>Provincia
-    <select name="provincia">
-      <option value="">— Selecciona —</option>
-      @foreach($listaProvincias as $codigo => $nombre)
-        <option value="{{ $codigo }}" @if(($datosValidados['provincia'] ?? '') === $codigo) selected @endif>
-          {{ $nombre }}
-        </option>
-      @endforeach
+
+    {{-- PROVINCIA --}}
+    @php
+        $provValor = $datosValidados['provincia'] ?? '';
+        $provError = $erroresValidacion['provincia'] ?? null;
+    @endphp
+    <label>Provincia</label>
+    <select name="provincia" class="{{ $provError ? 'error-input' : '' }}">
+        <option value="">Seleccione provincia</option>
+        @foreach($listaProvincias as $codigo => $nombre)
+            <option value="{{ $codigo }}"
+                @if($provValor === $codigo) selected @endif>
+                {{ $nombre }}
+            </option>
+        @endforeach
     </select>
-    @if(isset($erroresValidacion['provincia']))
-      <small class="error">{{ $erroresValidacion['provincia'] }}</small>
+    @if($provError)
+        <p class="msg error">{{ $provError }}</p>
     @endif
-  </label>
 
-  <label>Descripción
-    <input type="text" name="descripcion" value="{{ $datosValidados['descripcion'] ?? '' }}">
-    @if(isset($erroresValidacion['descripcion']))
-      <small class="error">{{ $erroresValidacion['descripcion'] }}</small>
+
+    {{-- FECHA DE REALIZACIÓN --}}
+    @php
+        $fechaValor = $datosValidados['fecha'] ?? '';
+        $fechaError = $erroresValidacion['fecha'] ?? null;
+    @endphp
+    <label>Fecha de realización (dd/mm/aaaa)</label>
+    <input type="text"
+           name="fecha"
+           value="{{ $fechaValor }}"
+           placeholder="dd/mm/aaaa"
+           class="{{ $fechaError ? 'error-input' : '' }}">
+    @if($fechaError)
+        <p class="msg error">{{ $fechaError }}</p>
     @endif
-  </label>
 
-  <label>Fecha de realización (dd/mm/aaaa)
-    <input type="text" name="fecha" value="{{ $datosValidados['fecha'] ?? '' }}">
-    @if(isset($erroresValidacion['fecha']))
-      <small class="error">{{ $erroresValidacion['fecha'] }}</small>
+
+    {{-- DESCRIPCIÓN --}}
+    @php
+        $descValor = $datosValidados['descripcion'] ?? '';
+        $descError = $erroresValidacion['descripcion'] ?? null;
+    @endphp
+    <label>Descripción</label>
+    <textarea name="descripcion"
+              class="{{ $descError ? 'error-input' : '' }}">{{ $descValor }}</textarea>
+    @if($descError)
+        <p class="msg error">{{ $descError }}</p>
     @endif
-  </label>
 
-  <label>Estado
-    @php $estadoActual = $datosValidados['estado'] ?? 'B'; @endphp
-    <select name="estado">
-      <option value="B" @if($estadoActual==='B') selected @endif>B (Esperando aprobación)</option>
-      <option value="P" @if($estadoActual==='P') selected @endif>P (Pendiente)</option>
-      <option value="R" @if($estadoActual==='R') selected @endif>R (Realizada)</option>
-      <option value="C" @if($estadoActual==='C') selected @endif>C (Cancelada)</option>
-    </select>
-    @if(isset($erroresValidacion['estado']))
-      <small class="error">{{ $erroresValidacion['estado'] }}</small>
-    @endif
-  </label>
 
-  <label>Operario
-    <input type="text" name="operario" value="{{ $datosValidados['operario'] ?? '' }}">
-  </label>
+    {{-- OPERARIO --}}
+    <label>Operario encargado</label>
+    <input type="text"
+           name="operario"
+           value="{{ $datosValidados['operario'] ?? '' }}">
 
-  <label>Anotaciones previas
+
+    {{-- ANOTACIONES PREVIAS --}}
+    <label>Anotaciones previas</label>
     <textarea name="anot_prev">{{ $datosValidados['anot_prev'] ?? '' }}</textarea>
-  </label>
 
-  <label>Anotaciones posteriores
-    <textarea name="anot_post">{{ $datosValidados['anot_post'] ?? '' }}</textarea>
-  </label>
 
-  <label>Fecha de creación (dd/mm/aaaa)
-    <input type="text" name="fecha_creacion" value="{{ $datosValidados['fecha_creacion'] ?? date('d/m/Y') }}">
-  </label>
+    <button type="submit" class="button-link" style="margin-top: 1rem;">
+        Crear tarea
+    </button>
 
-  <button type="submit">Crear</button>
 </form>
+
 @endsection

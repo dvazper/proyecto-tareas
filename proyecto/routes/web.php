@@ -3,6 +3,7 @@
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\OperarioController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\AuthController;
 
 Route::get('/', function () {
     return redirect('/tasks');
@@ -16,3 +17,6 @@ Route::post('/tasks/{id}/delete', [TaskController::class, 'destroy'])->name('tas
 
 Route::get('/tasks/{id}/operario',  [OperarioController::class, 'edit'])->name('operario.edit');
 Route::post('/tasks/{id}/operario', [OperarioController::class, 'update'])->name('operario.update');
+Route::get('/login',  [AuthController::class, 'mostrarFormularioLogin']);
+Route::post('/login', [AuthController::class, 'procesarLogin']);
+Route::post('/logout', [AuthController::class, 'logout']);
