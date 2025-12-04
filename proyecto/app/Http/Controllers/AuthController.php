@@ -14,17 +14,41 @@ class AuthController extends Controller
         $this->userModel = new UserModel();
     }
 
-  public function mostrarFormularioLogin()
-{
-    // Versión simple: siempre muestra el formulario.
-    // Si estás logueado y entras aquí, podrías mostrar un mensaje,
-    // pero no hace falta redirigir.
+    public function mostrarFormularioLogin()
+    {
+        $session = SessionManager::getInstancia();
 
-    return view('auth.login', [
-        'errorLogin' => null,
-    ]);
-}
+        // Si ya hay sesión iniciada, lo mando directamente al listado de tareas
+        if ($session->estaLogueado()) {
+            header('Location: /proyecto-tareas/proyecto/public/tasks');
+            exit;
+        }
 
+        // AUTO-LOGIN POR COOKIE (recordar sesión)
+        if (isset($_COOKIE['usuarioRecordado'])) {
+            $nombreUsuarioCookie = trim($_COOKIE['usuarioRecordado']);
+
+            if ($nombreUsuarioCookie !== '') {
+                $usuarioBd = $this->userModel->buscarPorNombreUsuario($nombreUsuarioCookie);
+
+                if ($usuarioBd !== null) {
+                    // Usuario válido => creamos sesión directamente
+                    $session->guardarUsuario($usuarioBd['usuario'], $usuarioBd['rol']);
+
+                    header('Location: /proyecto-tareas/proyecto/public/tasks');
+                    exit;
+                } else {
+                    // La cookie apunta a un usuario que ya no existe -> la limpiamos
+                    setcookie('usuarioRecordado', '', time() - 3600, "/");
+                }
+            }
+        }
+
+        // Si no hay sesión ni cookie válida, mostramos el formulario normal
+        return view('auth.login', [
+            'errorLogin' => null,
+        ]);
+    }
 
     public function procesarLogin()
     {
@@ -51,20 +75,41 @@ class AuthController extends Controller
             ]);
         }
 
+        // Login correcto -> guardamos sesión
         $session = SessionManager::getInstancia();
         $session->guardarUsuario($usuarioBd['usuario'], $usuarioBd['rol']);
+
+        // ¿Ha marcado "recordar sesión"?
+        if (!empty($_POST['recordar'])) {
+            // Guardamos el usuario en una cookie para 30 días
+            setcookie(
+                'usuarioRecordado',
+                $usuarioBd['usuario'],
+                time() + (86400 * 30),   // 30 días
+                "/"
+            );
+        } else {
+            // Si no lo marca, limpiamos cookie si existía
+            if (isset($_COOKIE['usuarioRecordado'])) {
+                setcookie('usuarioRecordado', '', time() - 3600, "/");
+            }
+        }
 
         header('Location: /proyecto-tareas/proyecto/public/tasks');
         exit;
     }
 
     public function logout()
-{
-    $session = SessionManager::getInstancia();
-    $session->cerrarSesion();
+    {
+        $session = SessionManager::getInstancia();
+        $session->cerrarSesion();
 
-    header('Location: /proyecto-tareas/proyecto/public/login');
-    exit;
-}
+        // Al cerrar sesión también borramos la cookie de recordar
+        if (isset($_COOKIE['usuarioRecordado'])) {
+            setcookie('usuarioRecordado', '', time() - 3600, "/");
+        }
 
+        header('Location: /proyecto-tareas/proyecto/public/login');
+        exit;
+    }
 }

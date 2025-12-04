@@ -17,8 +17,7 @@ class TaskController extends Controller
 public function index()
 {
     $session = SessionManager::getInstancia();
-
-    // SOLO redirige si NO hay sesión
+    // SOLO REDIRIGE SI NO HAY SESION
     if (!$session->estaLogueado()) {
         header('Location: /proyecto-tareas/proyecto/public/login');
         exit;
@@ -26,7 +25,16 @@ public function index()
 
     $esAdmin = $session->esAdmin();
 
-    $tareasRegistradas = $this->taskModel->obtenerTodas();
+    // LEER FILTRO DESDE LA URL (?estado=P, por ejemplo)
+    $estadoFiltro = $_GET['estado'] ?? '';
+    $estadoFiltro = htmlspecialchars(trim($estadoFiltro));
+
+    if ($estadoFiltro !== '') {
+        $tareasRegistradas = $this->taskModel->obtenerPorEstado($estadoFiltro);
+    } else {
+        $tareasRegistradas = $this->taskModel->obtenerTodas();
+    }
+
     $mensajeOk = $_SESSION['mensajeOk'] ?? null;
     unset($_SESSION['mensajeOk']);
 
@@ -34,8 +42,10 @@ public function index()
         'tareasRegistradas' => $tareasRegistradas,
         'mensajeOk'         => $mensajeOk,
         'esAdmin'           => $esAdmin,
+        'estadoFiltro'      => $estadoFiltro,   // para que la vista sepa qué opción marcar
     ]);
 }
+
 
 
 

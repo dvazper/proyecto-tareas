@@ -87,4 +87,20 @@ class TaskModel
     $stmt->execute(['id' => $id]);
 }
 
+public function obtenerPorEstado(string $estado): array
+{
+    if ($estado === '') {
+        // Si no hay filtro, devolvemos todas
+        return $this->obtenerTodas();
+    }
+
+    $sql = "SELECT * FROM tareas WHERE estado = :estado ORDER BY id DESC";
+    $stmt = $this->db->prepare($sql);
+    $stmt->bindValue(':estado', $estado, PDO::PARAM_STR);
+    $stmt->execute();
+
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+
 }

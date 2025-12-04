@@ -212,4 +212,16 @@ td .button-link {
     .main-header h1 {
         font-size: 1.2rem;
     }
+ /* ===========================
+    LOGIN
+    =========================== */
+    .login-card {
+    max-width: 480px;
+    margin: 3rem auto;
+    padding: 2rem;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0px 4px 20px rgba(0,0,0,0.08);
+}
+
 }

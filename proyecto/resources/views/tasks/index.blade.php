@@ -4,7 +4,7 @@
 
 @section('content')
 
-{{-- Botón de alta solo para administradores --}}
+{{-- BOTÓN DE CREAR TAREA (SOLO ADMIN) --}}
 @if(!empty($esAdmin) && $esAdmin)
     <a href="/proyecto-tareas/proyecto/public/tasks/create"
        class="button-link"
@@ -15,11 +15,42 @@
 
 <h2>Listado de tareas</h2>
 
-{{-- Mensaje de éxito si existe --}}
+{{-- MENSAJE OK --}}
 @if(!empty($mensajeOk))
     <p class="msg ok">{{ $mensajeOk }}</p>
 @endif
 
+{{-- FORMULARIO DE FILTRO --}}
+<form method="get"
+      action="/proyecto-tareas/proyecto/public/tasks"
+      style="margin-bottom: 1rem; display:flex; align-items:center; gap:0.75rem; flex-wrap:wrap;">
+
+    @php
+        $estadoActual = $estadoFiltro ?? '';
+    @endphp
+
+    <label for="estado" style="font-weight:600;">Filtrar por estado:</label>
+
+    <select name="estado" id="estado">
+        <option value="">Todos</option>
+        <option value="B" @if($estadoActual === 'B') selected @endif>B - Esperando aprobación</option>
+        <option value="P" @if($estadoActual === 'P') selected @endif>P - Pendiente</option>
+        <option value="R" @if($estadoActual === 'R') selected @endif>R - Realizada</option>
+        <option value="C" @if($estadoActual === 'C') selected @endif>C - Cancelada</option>
+    </select>
+
+    <button type="submit" class="button-link">
+        Aplicar filtro
+    </button>
+
+    <a href="/proyecto-tareas/proyecto/public/tasks"
+       class="button-link"
+       style="background-color:#6b7280;">
+        Limpiar filtros
+    </a>
+</form>
+
+{{-- TABLA DE TAREAS --}}
 <table>
     <thead>
         <tr>
@@ -41,7 +72,6 @@
             <td>{{ $tarea['contacto'] }}</td>
             <td>{{ $tarea['estado'] }}</td>
 
-            {{-- Fecha creación --}}
             <td>
                 @if(!empty($tarea['fecha_creacion']))
                     {{ date('d/m/Y', strtotime($tarea['fecha_creacion'])) }}
@@ -50,7 +80,6 @@
                 @endif
             </td>
 
-            {{-- Fecha realización --}}
             <td>
                 @if(!empty($tarea['fecha']))
                     {{ date('d/m/Y', strtotime($tarea['fecha'])) }}
@@ -61,13 +90,13 @@
 
             <td style="white-space: nowrap;">
 
-                {{-- Parte del operario --}}
+                {{-- PARTE DE OPERARIO --}}
                 <a href="/proyecto-tareas/proyecto/public/tasks/{{ $tarea['id'] }}/operario"
                    class="button-link">
                     Parte operario
                 </a>
 
-                {{-- Solo admin puede eliminar --}}
+                {{-- ELIMINAR SOLO ADMIN --}}
                 @if(!empty($esAdmin) && $esAdmin)
                     <form method="post"
                           action="/proyecto-tareas/proyecto/public/tasks/{{ $tarea['id'] }}/delete"
