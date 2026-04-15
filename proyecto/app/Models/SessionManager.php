@@ -21,9 +21,10 @@ class SessionManager
         return self::$instancia;
     }
 
-    public function guardarUsuario(string $nombreUsuario, string $rol): void
+    public function guardarUsuario(string $nombreUsuario, string $rol, ?int $id = null): void
     {
         $_SESSION['usuario_logueado'] = [
+            'id'     => $id,
             'nombre' => $nombreUsuario,
             'rol'    => $rol,
         ];

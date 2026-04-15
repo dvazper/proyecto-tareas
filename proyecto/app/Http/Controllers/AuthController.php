@@ -77,7 +77,7 @@ class AuthController extends Controller
 
         // Login correcto -> guardamos sesión
         $session = SessionManager::getInstancia();
-        $session->guardarUsuario($usuarioBd['usuario'], $usuarioBd['rol']);
+        $session->guardarUsuario($usuarioBd['usuario'], $usuarioBd['rol'], $usuarioBd['id'] ?? null);
 
         // ¿Ha marcado "recordar sesión"?
         if (!empty($_POST['recordar'])) {
