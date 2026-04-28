@@ -102,5 +102,24 @@ public function obtenerPorEstado(string $estado): array
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
+    public function obtenerPorOperario(int $operarioId): array
+    {
+        $sql = "SELECT * FROM tareas WHERE operario = :operario ORDER BY id DESC";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute(['operario' => $operarioId]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function obtenerPorOperarioYEstado(int $operarioId, string $estado): array
+    {
+        if ($estado === '') {
+            return $this->obtenerPorOperario($operarioId);
+        }
+
+        $sql = "SELECT * FROM tareas WHERE operario = :operario AND estado = :estado ORDER BY id DESC";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute(['operario' => $operarioId, 'estado' => $estado]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
 
 }

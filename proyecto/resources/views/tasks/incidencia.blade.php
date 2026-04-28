@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Nueva tarea')
+@section('title', 'Registrar incidencia')
 
 @section('content')
 
@@ -8,7 +8,7 @@
     ← Volver al listado
 </a>
 
-<h2>Nueva tarea</h2>
+<h2>Registrar incidencia</h2>
 
 @if(!empty($erroresValidacion))
     <div class="msg error">
@@ -16,7 +16,7 @@
     </div>
 @endif
 
-<form method="post" action="/proyecto-tareas/proyecto/public/tasks">
+<form method="post" action="/proyecto-tareas/proyecto/public/incidencias">
     @csrf
 
     {{-- CONTACTO --}}
@@ -39,7 +39,7 @@
         $nifValor = $datosValidados['nif'] ?? '';
         $nifError = $erroresValidacion['nif'] ?? null;
     @endphp
-    <label>NIF/CIF</label>
+    <label>CIF</label>
     <input type="text"
            name="nif"
            value="{{ $nifValor }}"
@@ -49,18 +49,18 @@
     @endif
 
 
-    {{-- TELÉFONO --}}
+    {{-- TELEFONO --}}
     @php
-        $telValor = $datosValidados['telefono'] ?? '';
-        $telError = $erroresValidacion['telefono'] ?? null;
+        $telefonoValor = $datosValidados['telefono'] ?? '';
+        $telefonoError = $erroresValidacion['telefono'] ?? null;
     @endphp
     <label>Teléfono</label>
     <input type="text"
            name="telefono"
-           value="{{ $telValor }}"
-           class="{{ $telError ? 'error-input' : '' }}">
-    @if($telError)
-        <p class="msg error">{{ $telError }}</p>
+           value="{{ $telefonoValor }}"
+           class="{{ $telefonoError ? 'error-input' : '' }}">
+    @if($telefonoError)
+        <p class="msg error">{{ $telefonoError }}</p>
     @endif
 
 
@@ -70,7 +70,7 @@
         $emailError = $erroresValidacion['email'] ?? null;
     @endphp
     <label>Email</label>
-    <input type="text"
+    <input type="email"
            name="email"
            value="{{ $emailValor }}"
            class="{{ $emailError ? 'error-input' : '' }}">
@@ -79,21 +79,21 @@
     @endif
 
 
-    {{-- DIRECCIÓN --}}
+    {{-- DIRECCION --}}
     <label>Dirección</label>
     <input type="text"
            name="direccion"
            value="{{ $datosValidados['direccion'] ?? '' }}">
 
 
-    {{-- POBLACIÓN --}}
+    {{-- POBLACION --}}
     <label>Población</label>
     <input type="text"
            name="poblacion"
            value="{{ $datosValidados['poblacion'] ?? '' }}">
 
 
-    {{-- CÓDIGO POSTAL --}}
+    {{-- CODIGO POSTAL --}}
     @php
         $cpValor = $datosValidados['cp'] ?? '';
         $cpError = $erroresValidacion['cp'] ?? null;
@@ -157,33 +157,17 @@
     @endif
 
 
-    {{-- OPERARIO --}}
-    @php
-        $operarioValor = $datosValidados['operario'] ?? '';
-        $operarioError = $erroresValidacion['operario'] ?? null;
-    @endphp
-    <label>Operario encargado</label>
-    <select name="operario" class="{{ $operarioError ? 'error-input' : '' }}">
-        <option value="">Seleccione operario</option>
-        @foreach($listaOperarios as $operario)
-            <option value="{{ $operario['id'] }}"
-                @if($operarioValor == $operario['id']) selected @endif>
-                {{ $operario['usuario'] }}
-            </option>
-        @endforeach
-    </select>
-    @if($operarioError)
-        <p class="msg error">{{ $operarioError }}</p>
-    @endif
-
-
     {{-- ANOTACIONES PREVIAS --}}
     <label>Anotaciones previas</label>
     <textarea name="anot_prev">{{ $datosValidados['anot_prev'] ?? '' }}</textarea>
 
 
+    @if(isset($erroresValidacion['cliente']))
+        <p class="msg error">{{ $erroresValidacion['cliente'] }}</p>
+    @endif
+
     <button type="submit" class="button-link" style="margin-top: 1rem;">
-        Crear tarea
+        Registrar incidencia
     </button>
 
 </form>

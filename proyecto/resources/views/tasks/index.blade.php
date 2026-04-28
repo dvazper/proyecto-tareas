@@ -13,6 +13,13 @@
     </a>
 @endif
 
+{{-- BOTÓN DE REGISTRAR INCIDENCIA --}}
+<a href="/proyecto-tareas/proyecto/public/incidencias/create"
+   class="button-link"
+   style="margin-bottom: 1rem; display:inline-block; background-color:#10b981;">
+    + Registrar incidencia
+</a>
+
 <h2>Listado de tareas</h2>
 
 {{-- MENSAJE OK --}}

@@ -102,6 +102,13 @@ class UserModel
         $consulta->execute($parametros);
     }
 
+    public function obtenerOperarios(): array
+    {
+        $sql = "SELECT * FROM usuarios WHERE rol = 'operario' ORDER BY usuario ASC";
+        $consulta = $this->conexionBd->query($sql);
+        return $consulta->fetchAll();
+    }
+
     public function actualizarContacto(int $id, string $correo, string $fechaAlta): void
     {
         $sql = "UPDATE usuarios SET correo = :correo, fecha_alta = :fecha_alta WHERE id = :id";

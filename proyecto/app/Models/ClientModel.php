@@ -51,6 +51,15 @@ class ClientModel
         return (int)$this->conexionBd->lastInsertId();
     }
 
+    public function buscarPorCifYTelefono(string $cif, string $telefono): ?array
+    {
+        $sql = "SELECT * FROM clientes WHERE cif = :cif AND telefono = :telefono LIMIT 1";
+        $stmt = $this->conexionBd->prepare($sql);
+        $stmt->execute(['cif' => $cif, 'telefono' => $telefono]);
+        $fila = $stmt->fetch();
+        return $fila ?: null;
+    }
+
     public function actualizar(int $id, array $datos): void
     {
         $sql = "UPDATE clientes SET

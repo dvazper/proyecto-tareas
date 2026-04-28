@@ -4,14 +4,20 @@ namespace App\Http\Controllers;
 
 use App\Models\TaskModel;
 use App\Models\SessionManager;
+use App\Models\UserModel;
+use App\Models\ClientModel;
 
 class TaskController extends Controller
 {
     private TaskModel $taskModel;
+    private UserModel $userModel;
+    private ClientModel $clientModel;
 
     public function __construct()
     {
         $this->taskModel = new TaskModel();
+        $this->userModel = new UserModel();
+        $this->clientModel = new ClientModel();
     }
 
 public function index()
@@ -24,15 +30,28 @@ public function index()
     }
 
     $esAdmin = $session->esAdmin();
+    $esOperario = $session->esOperario();
 
     // LEER FILTRO DESDE LA URL (?estado=P, por ejemplo)
     $estadoFiltro = $_GET['estado'] ?? '';
     $estadoFiltro = htmlspecialchars(trim($estadoFiltro));
 
-    if ($estadoFiltro !== '') {
-        $tareasRegistradas = $this->taskModel->obtenerPorEstado($estadoFiltro);
+    if ($esOperario) {
+        // Operarios solo ven sus tareas
+        $usuario = $session->obtenerUsuario();
+        $operarioId = $usuario['id'];
+        if ($estadoFiltro !== '') {
+            $tareasRegistradas = $this->taskModel->obtenerPorOperarioYEstado($operarioId, $estadoFiltro);
+        } else {
+            $tareasRegistradas = $this->taskModel->obtenerPorOperario($operarioId);
+        }
     } else {
-        $tareasRegistradas = $this->taskModel->obtenerTodas();
+        // Admins ven todas
+        if ($estadoFiltro !== '') {
+            $tareasRegistradas = $this->taskModel->obtenerPorEstado($estadoFiltro);
+        } else {
+            $tareasRegistradas = $this->taskModel->obtenerTodas();
+        }
     }
 
     $mensajeOk = $_SESSION['mensajeOk'] ?? null;
@@ -51,10 +70,15 @@ public function index()
 
     public function create()
 {
-    return view('tasks.create', [
-        'listaProvincias'   => $this->provinciasINE(),
-        'datosValidados'    => [],
-        'erroresValidacion' => [],
+        $session = SessionManager::getInstancia();
+        if (!$session->esAdmin()) {
+            header('Location: /proyecto-tareas/proyecto/public/tasks');
+            exit;
+        }
+
+        return view('tasks.create', [
+            'listaProvincias'   => $this->provinciasINE(),
+            'listaOperarios'    => $this->userModel->obtenerOperarios(),
     ]);
 }
 
@@ -86,11 +110,50 @@ public function index()
 
     return view('tasks.create', [
         'listaProvincias'   => $this->provinciasINE(),
+        'listaOperarios'    => $this->userModel->obtenerOperarios(),
         'datosValidados'    => $datosValidados,
         'erroresValidacion' => $erroresValidacion,
     ]);
 }
 
+    public function createIncidencia()
+    {
+        return view('tasks.incidencia', [
+            'listaProvincias'   => $this->provinciasINE(),
+            'datosValidados'    => [],
+            'erroresValidacion' => [],
+        ]);
+    }
+
+    public function storeIncidencia()
+    {
+        $datosFormulario = $_POST;
+
+        // Estado por defecto para incidencias
+        $datosFormulario['estado'] = 'B';   // Esperando asignación
+        $datosFormulario['operario'] = ''; // Sin asignar
+
+        // VALIDACIÓN
+        [$datosValidados, $erroresValidacion] = $this->validarIncidencia($datosFormulario);
+
+        if (empty($erroresValidacion)) {
+            $datosValidados['fecha']          = $this->aFechaSQL($datosValidados['fecha']);
+            $datosValidados['fecha_creacion'] = $this->aFechaSQL($datosValidados['fecha_creacion']);
+            $datosValidados['fichero']        = '';
+
+            $this->taskModel->insertar($datosValidados);
+
+            $_SESSION['mensajeOk'] = 'Incidencia registrada correctamente. Un administrador la asignará pronto.';
+            header('Location: /proyecto-tareas/proyecto/public/tasks');
+            exit;
+        }
+
+        return view('tasks.incidencia', [
+            'listaProvincias'   => $this->provinciasINE(),
+            'datosValidados'    => $datosValidados,
+            'erroresValidacion' => $erroresValidacion,
+        ]);
+    }
 
 
     /* ============================================================
@@ -104,6 +167,25 @@ public function index()
 
         $errores += $this->validarObligatorios($datosValidados);
         $errores += $this->validarNif($datosValidados);
+        $errores += $this->validarTelefono($datosValidados);
+        $errores += $this->validarEmail($datosValidados);
+        $errores += $this->validarCodigoPostal($datosValidados);
+        $errores += $this->validarProvincia($datosValidados);
+        $errores += $this->validarFecha($datosValidados);
+        $errores += $this->validarEstado($datosValidados);
+
+        $datosValidados = $this->normalizarFechaCreacion($datosValidados);
+
+        return [$datosValidados, $errores];
+    }
+
+    private function validarIncidencia(array $datosFormulario): array
+    {
+        $datosValidados = $this->limpiarCampos($datosFormulario);
+        $errores = [];
+
+        $errores += $this->validarObligatoriosIncidencia($datosValidados);
+        $errores += $this->validarCliente($datosValidados);
         $errores += $this->validarTelefono($datosValidados);
         $errores += $this->validarEmail($datosValidados);
         $errores += $this->validarCodigoPostal($datosValidados);
@@ -166,8 +248,61 @@ public function index()
         $erroresValidacion['fecha'] = 'La fecha de realización es obligatoria.';
     }
 
+    // Para admins, operario es obligatorio
+    $session = SessionManager::getInstancia();
+    if ($session->esAdmin() && $datosTarea['operario'] === '') {
+        $erroresValidacion['operario'] = 'Debe asignar un operario.';
+    }
+
     return $erroresValidacion;
 }
+
+   private function validarObligatoriosIncidencia(array $datosTarea): array
+{
+    $erroresValidacion = [];
+
+    if ($datosTarea['contacto'] === '') {
+        $erroresValidacion['contacto'] = 'La persona de contacto es obligatoria.';
+    }
+
+    if ($datosTarea['nif'] === '') {
+        $erroresValidacion['nif'] = 'El CIF es obligatorio.';
+    }
+
+    if ($datosTarea['telefono'] === '') {
+        $erroresValidacion['telefono'] = 'El teléfono es obligatorio.';
+    }
+
+    if ($datosTarea['descripcion'] === '') {
+        $erroresValidacion['descripcion'] = 'La descripción es obligatoria.';
+    }
+
+    if ($datosTarea['email'] === '') {
+        $erroresValidacion['email'] = 'El email es obligatorio.';
+    }
+
+    if ($datosTarea['fecha'] === '') {
+        $erroresValidacion['fecha'] = 'La fecha de realización es obligatoria.';
+    }
+
+    return $erroresValidacion;
+}
+
+    private function validarCliente(array $datosTarea): array
+    {
+        $erroresValidacion = [];
+        $cif = $datosTarea['nif'] ?? '';
+        $telefono = $datosTarea['telefono'] ?? '';
+
+        if ($cif !== '' && $telefono !== '') {
+            $cliente = $this->clientModel->buscarPorCifYTelefono($cif, $telefono);
+            if (!$cliente) {
+                $erroresValidacion['cliente'] = 'CIF y teléfono no coinciden con ningún cliente registrado.';
+            }
+        }
+
+        return $erroresValidacion;
+    }
 
     private function validarNif(array $datosTarea): array
 {

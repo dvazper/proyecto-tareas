@@ -16,6 +16,9 @@ Route::get('/tasks/create', [TaskController::class, 'create'])->name('tasks.crea
 Route::post('/tasks',       [TaskController::class, 'store'])->name('tasks.store');
 Route::post('/tasks/{id}/delete', [TaskController::class, 'destroy'])->name('tasks.destroy');
 
+Route::get('/incidencias/create', [TaskController::class, 'createIncidencia'])->name('incidencias.create');
+Route::post('/incidencias',       [TaskController::class, 'storeIncidencia'])->name('incidencias.store');
+
 
 Route::get('/tasks/{id}/operario',  [OperarioController::class, 'edit'])->name('operario.edit');
 Route::post('/tasks/{id}/operario', [OperarioController::class, 'update'])->name('operario.update');
